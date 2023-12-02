@@ -8,7 +8,7 @@ int main (int argc, char **argv)
     Grafo *grafo = new Grafo (in);
     //grafo->kruskal();
     //grafo->dijkstra(2);
-    grafo->FloydWarshall();
+    grafo->FloydWarshall(2, 1);
     //grafo->imprime();
     delete grafo;
     //grafo->imprime ();  

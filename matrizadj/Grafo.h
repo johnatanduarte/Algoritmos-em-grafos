@@ -48,7 +48,7 @@ using namespace std;
     bool regular();
     bool euleriano();
     bool subeuleriano();
-    void FloydWarshall();
+    void FloydWarshall(int verticeOrigem, int verticeDestino);
     ~Grafo ();	  
 	};
 
@@ -246,62 +246,66 @@ using namespace std;
       else return false;
   }
 
-  void Grafo::FloydWarshall(){
+ void Grafo::FloydWarshall(int verticeOrigem, int verticeDestino) {
     int **d, **antecessor;
     d = new int*[this->_numVertices()];
+    antecessor = new int*[this->_numVertices()];
 
-    for(int i=0; i<this->_numVertices(); i++){
-      d[i]=new int[this->_numVertices()];
-      antecessor[i]=new int[this->_numVertices()];
+    for(int i = 0; i < this->_numVertices(); i++) {
+        d[i] = new int[this->_numVertices()];
+        antecessor[i] = new int[this->_numVertices()];
     }
+
     for (int i = 0; i < this->_numVertices(); i++) {
-      for (int j = 0; j < this->_numVertices(); j++) {
-        if (this->existeAresta(i, j)) {
-          
-          d[i][j] = this->mat[i][j];
-          antecessor[i][j] = i;
-        } else {
-          if(i == j){
-            d[i][j] = 0;
-          } else{
-            d[i][j] = INT_MAX;
-          }
-          
-          antecessor[i][j] = -1;
-      }
-    }
-  }
-  for (int k = 0; k < this->_numVertices(); k++) {
-    for (int i = 0; i < this->_numVertices(); i++) {
-      for (int j = 0; j < this->_numVertices(); j++) {
-        if(d[i][k] == INT_MAX || d[k][j] == INT_MAX) 
-        continue;
-        if (d[i][k] + d[k][j] < d[i][j]) {
-          d[i][j] = d[i][k] + d[k][j];
-          antecessor[i][j] = antecessor[k][j];
+        for (int j = 0; j < this->_numVertices(); j++) {
+            if (this->existeAresta(i, j)) {
+                d[i][j] = this->mat[i][j];
+                antecessor[i][j] = i;
+            } else {
+                if(i == j) {
+                    d[i][j] = 0;
+                } else {
+                    d[i][j] = INT_MAX;
+                }
+                antecessor[i][j] = -1;
+            }
         }
-      }
     }
-  }
-  // Print da distancia da matrix
-  cout << "Distancia matrix:" << endl;
-  for (int i = 0; i < this->_numVertices(); i++) {
-    for (int j = 0; j < this->_numVertices(); j++) {
-      cout << d[i][j] << " ";
-    }
-    cout << endl;
-  }
 
-  // Print do predecessor da matrix
-  cout << "Predecessor matrix:" << endl;
-  for (int i = 0; i < this->_numVertices(); i++) {
-    for (int j = 0; j < this->_numVertices(); j++) {
-      cout << antecessor[i][j] << " ";
+    for (int k = 0; k < this->_numVertices(); k++) {
+        for (int i = 0; i < this->_numVertices(); i++) {
+            for (int j = 0; j < this->_numVertices(); j++) {
+                if(d[i][k] == INT_MAX || d[k][j] == INT_MAX) 
+                    continue;
+                if (d[i][k] + d[k][j] < d[i][j]) {
+                    d[i][j] = d[i][k] + d[k][j];
+                    antecessor[i][j] = antecessor[k][j];
+                }
+            }
+        }
     }
-    cout << endl;
-  }
 
-  }
+    // Print da distancia da matrix
+    cout << "Distancia matrix:" << endl;
+    for (int i = 0; i < this->_numVertices(); i++) {
+        for (int j = 0; j < this->_numVertices(); j++) {
+            cout << d[i][j] << " ";
+        }
+        cout << endl;
+    }
+
+    // Print do predecessor da matrix
+    cout << "Predecessor matrix:" << endl;
+    for (int i = 0; i < this->_numVertices(); i++) {
+        for (int j = 0; j < this->_numVertices(); j++) {
+            cout << antecessor[i][j] << " ";
+        }
+        cout << endl;
+    }
+
+    // Mostrar a menor distância entre os vértices fornecidos
+    cout << "Menor distancia entre " << verticeOrigem << " e " << verticeDestino << ": " << d[verticeOrigem][verticeDestino] << endl;
+}
 
   Grafo::~Grafo()
   {
