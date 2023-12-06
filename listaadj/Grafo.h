@@ -12,6 +12,17 @@ using namespace std;
 
 	class Grafo {
 	public:
+    struct PrimResult
+  {
+    int *antecessor;
+    double *peso;
+    int numVertices;
+  };
+  struct ResultadoBusca
+  {
+    int *antecessor;
+    int *distancia;
+  };
 		class Aresta {
 	  private:
 	    int v1, v2, peso; 
@@ -75,12 +86,16 @@ using namespace std;
     bool ciclico(); //fazer
     int numComponentes(); //fazer
     vector<int> ordemTopologica(); //fazer
-    void buscaLargura();
+    ResultadoBusca buscaEmLargura();
     void visitaBfs(int u, int *cor, int *dist, int *antecessor);
     void imprimeCaminho(int u, int v, int *antecessor);
     void kruskal();
-    int* prim(int raiz);
     void dijkstra(int raiz);
+    static const int BRANCO = 0;
+    static const int CINZA = 1;
+    static const int PRETO = 2;
+    static const int INFINIY = __INT_MAX__;
+    PrimResult prim(int raiz);
 
     ~Grafo ();	  
 	};
@@ -175,19 +190,21 @@ using namespace std;
     return grafoT;
   } 
 
-  void Grafo::buscaProfundidade(){
-    int *cor = new int [this->_numVertices()];
-    int *antecessor = new int [this->_numVertices()];
+  void Grafo::buscaProfundidade()
+  {
+    int *cor = new int[this->numVertices];
+    int *antecessor = new int[this->numVertices];
 
-    for (int u = 0; u < this->numVertices; u++){
-      cor[u]=0;
-      antecessor[0]=-1;
+    for (int u = 0; u < this->numVertices; u++)
+    {
+      cor[u] = BRANCO;
+      antecessor[u] = -1;
     }
-    for (int u = 0; u < this->numVertices; u++){
-      if(cor[u] == 0){
+    for (int u = 0; u < this->numVertices; u++)
+      if (cor[u] == BRANCO)
         this->visitaDfs(u, cor, antecessor);
-      }
-    }
+    delete[] cor;
+    delete[] antecessor;
   }
 
   void Grafo::visitaDfs(int u, int *cor, int *antecessor){
@@ -209,24 +226,30 @@ using namespace std;
     cout << "preto: " << u << endl;
   }
 
-  void Grafo::buscaLargura()
+Grafo::ResultadoBusca Grafo::buscaEmLargura()
 {
-  int *cor = new int[this->_numVertices()];
-  int *antecessor = new int[this->_numVertices()];
-  int *dist = new int[this->_numVertices()];
-  for (int i = 0; i < this->_numVertices(); i++)
+  int *cor = new int[this->numVertices];
+  int *antecessor = new int[this->numVertices];
+  int *distancia = new int[this->numVertices];
+  // vector<int> distancia;
+
+  for (int u = 0; u < this->numVertices; u++)
   {
-    cor[i] = 0;
-    dist[i] = 1e9;
-    antecessor[i] = -1;
+    cor[u] = BRANCO;
+    antecessor[u] = -1;
+    distancia[u] = -1;
   }
-  for (int i = 0; i < this->_numVertices(); i++)
-  {
-    if (cor[i] == 0)
-    {
-      this->visitaBfs(i, cor, dist, antecessor);
-    }
-  }
+  for (int u = 0; u < this->numVertices; u++)
+    if (cor[u] == BRANCO)
+      this->visitaBfs(u, cor, antecessor, distancia);
+
+  ResultadoBusca resultado;
+  resultado.antecessor = antecessor;
+  resultado.distancia = distancia;
+  delete[] cor;
+  delete[] antecessor;
+  delete[] distancia;
+  return resultado;
 }
 
   void Grafo::visitaBfs(int u, int *cor, int *dist, int *antecessor){
@@ -335,48 +358,62 @@ void Grafo::kruskal() {
     delete [] this->adj;
   }	  
 
-  int* Grafo::prim(int raiz) {
-    int n = this->_numVertices();
-    int* antecessor = new int[n];
-    double* peso = new double[n];
-    int* vs = new int[n + 1];
-    bool* itensHeap = new bool[n];
+  Grafo::PrimResult Grafo::prim(int raiz) {
+  int n = this->_numVertices();
+  int *antecessor = new int[n];
+  double *peso = new double[n];
+  int *vs = new int[n + 1];
+  bool *itensHeap = new bool[n];
 
-    for (int i = 0; i < n; i++) {
-        peso[i] = INFINITY;
-        antecessor[i] = -1;
-        itensHeap[i] = true;
-        vs[i + 1] = i;
-    }
+  for (int i = 0; i < n; i++) {
+    peso[i] = INFINIY;
+    antecessor[i] = -1;
+    itensHeap[i] = true;
+    vs[i + 1] = i;
+  }
 
-    peso[raiz] = 0;
+  peso[raiz] = 0;
 
-    FPHeapMinIndireto Q(peso, vs, n);
-    Q.constroi();
+  FPHeapMinIndireto Q(peso, vs, n);
+  Q.constroi();
 
-    while (!Q.vazio()) {
-        int u = Q.retiraMin();
-        itensHeap[u] = false;
-        if (!this->listaAdjVazia(u)) {
-            Aresta* adj = this->primeiroListaAdj(u);
-            while (adj != NULL) {
-                int v = adj->_v2();
-                int pesoAresta = adj->_peso();
+  while (!Q.vazio()) {
+    int u = Q.retiraMin();
+    itensHeap[u] = false;
+    if (!this->listaAdjVazia(u)) {
+      Aresta *adj = this->primeiroListaAdj(u);
+      while (adj != NULL) {
+        int v = adj->_v2();
+        int pesoAresta = adj->_peso();
 
-                if (itensHeap[v] && pesoAresta < peso[v]) {
-                    antecessor[v] = u;
-                    Q.diminuiChave(v, pesoAresta);
-                }
-                delete adj;
-                adj = this->proxAdj(u); // próxima aresta de u
-            }
+        if (itensHeap[v] && pesoAresta < peso[v]) {
+          antecessor[v] = u;
+          Q.diminuiChave(v, pesoAresta);
         }
+        delete adj;
+        adj = this->proxAdj(u);
+      }
     }
+  }
 
-    delete[] itensHeap;
-    delete[] vs;
+  // Imprimir os resultados
+  cout << "Resultado do algoritmo de Prim:" << endl;
+  for (int i = 0; i < n; ++i) {
+    cout << "Antecessor de " << i << ": " << antecessor[i] << ", Peso: " << peso[i] << endl;
+  }
 
-    return antecessor;
+  // Liberar memória alocada
+  delete[] itensHeap;
+  delete[] vs;
+
+  // Criar o resultado a ser retornado
+  PrimResult result;
+  result.antecessor = antecessor;
+  result.peso = peso;
+  result.numVertices = n;
+
+  // Retornar o resultado
+  return result;
 }
 
 void Grafo::dijkstra(int raiz) {

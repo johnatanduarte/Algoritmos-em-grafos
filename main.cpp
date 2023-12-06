@@ -1,16 +1,20 @@
-#include "matrizadj/Grafo.h" 
+#include "listaadj/Grafo.h" 
 #include <fstream>
 using namespace std;
 
 int main (int argc, char **argv) 
 {
-    ifstream in ("exemplo7.txt");
+    ifstream in ("exemplo5.txt");
     Grafo *grafo = new Grafo (in);
     //grafo->kruskal();
     //grafo->dijkstra(2);
     //grafo->FloydWarshall(2, 1);
-    int resultado = grafo->emparelhamentoMaximo();
-    std::cout << "Maior numero de atividades simultaneas: " << resultado << std::endl;
+    //int resultado = grafo->emparelhamentoMaximo();
+    //std::cout << "Maior numero de atividades simultaneas: " << resultado << std::endl;
+    int raiz = 0;
+
+    // Chame a função Prim
+    Grafo::PrimResult resultadoPrim = grafo->prim(raiz);
 
     //grafo->imprime();
     delete grafo;
