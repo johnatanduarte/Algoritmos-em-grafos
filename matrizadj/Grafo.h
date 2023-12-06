@@ -49,6 +49,10 @@ using namespace std;
     bool euleriano();
     bool subeuleriano();
     void FloydWarshall(int verticeOrigem, int verticeDestino);
+    int maiorNumeroAtividadesSimultaneas();
+    int emparelhamentoMaximo();
+    bool buscaAumentante();
+    bool augmentingPath(int u, bool visitado[], int matchTrabalhador[], int matchAtividade[]);
     ~Grafo ();	  
 	};
 
@@ -315,6 +319,46 @@ using namespace std;
     delete [] this->pos;
   }
 
+int Grafo::emparelhamentoMaximo() {
+    int* matchTrabalhador = new int[numVertices];
+    int* matchAtividade = new int[numVertices];
+    memset(matchTrabalhador, -1, sizeof(int) * numVertices);
+    memset(matchAtividade, -1, sizeof(int) * numVertices);
+
+    int resultado = 0;
+
+    for (int i = 0; i < numVertices; i++) {
+        if (matchTrabalhador[i] == -1) {
+            bool visitado[numVertices];
+            memset(visitado, false, sizeof(visitado));
+
+            if (augmentingPath(i, visitado, matchTrabalhador, matchAtividade)) {
+                resultado++;
+            }
+        }
+    }
+
+    delete[] matchTrabalhador;
+    delete[] matchAtividade;
+
+    return resultado;
+}
+
+bool Grafo::augmentingPath(int u, bool visitado[], int matchTrabalhador[], int matchAtividade[]) {
+    for (int v = 0; v < numVertices; v++) {
+        if (mat[u][v] && !visitado[v]) {
+            visitado[v] = true;
+
+            if (matchAtividade[v] == -1 || augmentingPath(matchAtividade[v], visitado, matchTrabalhador, matchAtividade)) {
+                matchTrabalhador[u] = v;
+                matchAtividade[v] = u;
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
 
 
 		

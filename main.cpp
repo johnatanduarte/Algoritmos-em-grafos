@@ -4,11 +4,14 @@ using namespace std;
 
 int main (int argc, char **argv) 
 {
-    ifstream in ("exemplo6.txt");
+    ifstream in ("exemplo7.txt");
     Grafo *grafo = new Grafo (in);
     //grafo->kruskal();
     //grafo->dijkstra(2);
-    grafo->FloydWarshall(2, 1);
+    //grafo->FloydWarshall(2, 1);
+    int resultado = grafo->emparelhamentoMaximo();
+    std::cout << "Maior numero de atividades simultaneas: " << resultado << std::endl;
+
     //grafo->imprime();
     delete grafo;
     //grafo->imprime ();  
