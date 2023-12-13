@@ -4,18 +4,44 @@ using namespace std;
 
 int main (int argc, char **argv) 
 {
-    ifstream in ("exemplo5.txt");
+    ifstream in ("dfs_input.txt");
     Grafo *grafo = new Grafo (in);
+    
     //grafo->kruskal();
     //grafo->dijkstra(2);
     //grafo->FloydWarshall(2, 1);
     //int resultado = grafo->emparelhamentoMaximo();
     //std::cout << "Maior numero de atividades simultaneas: " << resultado << std::endl;
-    int raiz = 0;
+    //int raiz = 0;
 
-    // Chame a função Prim
-    Grafo::PrimResult resultadoPrim = grafo->prim(raiz);
+                //grafo->buscaEmLargura();
+                //grafo->buscaMenorCaminho(7, 1);
+    grafo->buscaProfundidade();
+    
+    // Verificar se o grafo possui ciclo
+     bool possuiCiclo = grafo->aciclico();
+    if (possuiCiclo) {
+        cout << "O grafo possui ciclo." << endl;
+    } else {
+        cout << "O grafo nao possui ciclo." << endl;
+    }
 
+    // Realizar ordenação topológica
+    vector<int> ordemTopologica = grafo->ordemTopologica();
+    cout << "Ordenacao Topologica: ";
+    for (int i = 0; i < ordemTopologica.size(); i++) {
+        cout << ordemTopologica[i] << " ";
+    }
+    cout << endl;
+
+    // Verificar o número de componentes
+    int numComponentes = grafo->numComponentes();
+    cout << "Numero de componentes: " << numComponentes << endl;  
+
+
+
+    //Chame a função Prim
+    //Grafo::PrimResult resultadoPrim = grafo->prim(raiz);
     //grafo->imprime();
     delete grafo;
     //grafo->imprime ();  

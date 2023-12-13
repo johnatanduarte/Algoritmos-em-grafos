@@ -320,23 +320,32 @@ using namespace std;
   }
 
 int Grafo::emparelhamentoMaximo() {
-    int* matchTrabalhador = new int[numVertices];
-    int* matchAtividade = new int[numVertices];
+    int* matchTrabalhador = new int[numVertices];//Array para armazenar o emparelhamento dos trabalhadores.
+    int* matchAtividade = new int[numVertices];//Array para armazenar o emparelhamento das atividades.
     memset(matchTrabalhador, -1, sizeof(int) * numVertices);
     memset(matchAtividade, -1, sizeof(int) * numVertices);
 
-    int resultado = 0;
+    int resultado = 0; //contador para o número de atividades que podem ser executadas simultaneamente
+   
 
     for (int i = 0; i < numVertices; i++) {
-        if (matchTrabalhador[i] == -1) {
-            bool visitado[numVertices];
-            memset(visitado, false, sizeof(visitado));
-
+        if (matchTrabalhador[i] == -1) { //Verifica se o trabalhador atual ainda não foi emparelhado.
+            bool visitado[numVertices];// Array para armazenar os nós visitados
+            memset(visitado, false, sizeof(visitado)); // Inicializa todos os nós como não visitados
+            // Se existe um caminho de aumento a partir do trabalhador atual
             if (augmentingPath(i, visitado, matchTrabalhador, matchAtividade)) {
                 resultado++;
+                
             }
         }
     }
+
+          cout << "array de trabalhadores" << endl;
+        for (int i = 0; i < numVertices; i++){
+      cout << matchTrabalhador[i] << endl;}
+      cout << "array de atividades" << endl;
+        for (int i = 0; i < numVertices; i++){
+      cout << matchAtividade[i] << endl;} 
 
     delete[] matchTrabalhador;
     delete[] matchAtividade;
@@ -348,7 +357,7 @@ bool Grafo::augmentingPath(int u, bool visitado[], int matchTrabalhador[], int m
     for (int v = 0; v < numVertices; v++) {
         if (mat[u][v] && !visitado[v]) {
             visitado[v] = true;
-
+//se a atividade não está emparelhada ou se existe um caminho de aumento para a atividade emparelhada, ela atualiza os emparelhamentos e retorna verdadeiro.
             if (matchAtividade[v] == -1 || augmentingPath(matchAtividade[v], visitado, matchTrabalhador, matchAtividade)) {
                 matchTrabalhador[u] = v;
                 matchAtividade[v] = u;
@@ -356,9 +365,10 @@ bool Grafo::augmentingPath(int u, bool visitado[], int matchTrabalhador[], int m
             }
         }
     }
-
+    
     return false;
 }
+
 
 
 		

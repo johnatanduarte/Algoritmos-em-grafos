@@ -83,14 +83,17 @@ using namespace std;
 	  Grafo *grafoTransposto ();
     void visitaDfs(int u, int *cor, int *antecessor);
     void buscaProfundidade(); 
-    bool ciclico(); //fazer
-    int numComponentes(); //fazer
-    vector<int> ordemTopologica(); //fazer
-    ResultadoBusca buscaEmLargura();
+    bool aciclico(); 
+    int numComponentes(); 
+    vector<int> ordemTopologica(); 
+    void visitaDfsComOrdem(int u, int *cor, int *antecessor, vector<int> &ordem);
+    void buscaEmLargura();
     void visitaBfs(int u, int *cor, int *dist, int *antecessor);
     void imprimeCaminho(int u, int v, int *antecessor);
     void kruskal();
     void dijkstra(int raiz);
+    bool visitaDfsCiclo(int u, int *cor);
+    void buscaMenorCaminho(int u, int v);
     static const int BRANCO = 0;
     static const int CINZA = 1;
     static const int PRETO = 2;
@@ -226,74 +229,214 @@ using namespace std;
     cout << "preto: " << u << endl;
   }
 
-Grafo::ResultadoBusca Grafo::buscaEmLargura()
+  bool Grafo::aciclico()
+{
+  int *cor = new int[this->numVertices];
+
+  for (int u = 0; u < this->numVertices; u++)
+  {
+    cor[u] = BRANCO;
+  }
+
+  for (int u = 0; u < this->numVertices; u++)
+  {
+    if (cor[u] == BRANCO && visitaDfsCiclo(u, cor))
+    {
+      delete[] cor;
+      return false; 
+    }
+  }
+
+  delete[] cor;
+  return true; 
+}
+
+bool Grafo::visitaDfsCiclo(int u, int *cor)
+{
+  cor[u] = CINZA;
+
+  if (!this->listaAdjVazia(u))
+  {
+    Aresta *adj = this->primeiroListaAdj(u);
+
+    while (adj != NULL)
+    {
+      int v = adj->_v2();
+
+      if (cor[v] == CINZA)
+        return true;
+
+      if (cor[v] == BRANCO && visitaDfsCiclo(v, cor))
+      {
+        delete adj;
+        return true;
+      }
+
+      delete adj;
+      adj = this->proxAdj(u);
+    }
+  }
+
+  cor[u] = PRETO;
+  return false;
+}
+
+int Grafo::numComponentes()
 {
   int *cor = new int[this->numVertices];
   int *antecessor = new int[this->numVertices];
-  int *distancia = new int[this->numVertices];
-  // vector<int> distancia;
+  int numComponentes = 0;
 
   for (int u = 0; u < this->numVertices; u++)
   {
     cor[u] = BRANCO;
     antecessor[u] = -1;
-    distancia[u] = -1;
+  }
+  for (int u = 0; u < this->numVertices; u++)
+  {
+    if (cor[u] == BRANCO)
+    {
+      numComponentes++;
+      this->visitaDfs(u, cor, antecessor);
+    }
+  }
+  delete[] cor;
+  delete[] antecessor;
+  return numComponentes;
+}
+
+void Grafo::visitaBfs(int u, int *cor, int *dist, int *antecessor)
+{
+  queue<int> fila;
+  fila.push(u);
+
+  while (!fila.empty())
+  {
+    int u = fila.front();
+    fila.pop();
+    if (!this->listaAdjVazia(u))
+    {
+      Aresta *adj = this->primeiroListaAdj(u);
+      while (adj != NULL) 
+      {
+        int v = adj->_v2();
+        if (cor[v] == 0)
+        {
+          cout << "Visitou: " << v << endl;
+          cout << "Mudou para cinza: " << endl;
+          cor[v] = 1;
+          dist[v] = dist[u] + 1;
+          antecessor[v] = u;
+          fila.push(v);
+        }
+        delete adj;
+        adj = this->proxAdj(u);
+      }
+
+      cor[u] = 2; 
+      cout << "Mudou para preto: " << endl;
+    }
+  }
+}
+
+void Grafo::buscaEmLargura()
+{
+  int *cor = new int[this->numVertices];
+  int *antecessor = new int[this->numVertices];
+  int *dist = new int[this->numVertices];
+
+  for (int u = 0; u < this->numVertices; u++)
+  {
+    cor[u] = 0;
+    antecessor[u] = -1;
+    dist[u] = __INT_MAX__;
+  }
+  for (int u = 0; u < this->numVertices; u++)
+  {
+    if (cor[u] == 0) 
+    {
+      this->visitaBfs(u, cor, dist, antecessor);
+    }
+  }
+}
+
+void Grafo::imprimeCaminho(int u, int v, int *antecessor)
+{
+
+  if (u == v)
+    cout << v << endl;
+  else if (antecessor[v] == -1)
+  {
+
+    cout << "Não exite caminho" << endl;
+  }
+  else
+  {
+    imprimeCaminho(u, antecessor[v], antecessor);
+    cout << v << endl;
+  }
+}
+
+void Grafo::buscaMenorCaminho(int u, int v)
+{
+  int *cor = new int[this->numVertices];
+  int *antecessor = new int[this->numVertices];
+  int *dist = new int[this->numVertices];
+
+  for (int u = 0; u < this->numVertices; u++)
+  {
+    cor[u] = 0;
+    antecessor[u] = -1;
+    dist[u] = __INT_MAX__;
+  }
+
+  this->visitaBfs(u, cor, dist, antecessor);
+  this->imprimeCaminho(u, v, antecessor);
+}
+
+  vector<int> Grafo::ordemTopologica()
+{
+  vector<int> ordem;
+  int *cor = new int[this->numVertices];
+  int *antecessor = new int[this->numVertices];
+
+  for (int u = 0; u < this->numVertices; u++)
+  {
+    cor[u] = BRANCO;
+    antecessor[u] = -1;
   }
   for (int u = 0; u < this->numVertices; u++)
     if (cor[u] == BRANCO)
-      this->visitaBfs(u, cor, antecessor, distancia);
-
-  ResultadoBusca resultado;
-  resultado.antecessor = antecessor;
-  resultado.distancia = distancia;
+      this->visitaDfsComOrdem(u, cor, antecessor, ordem);
   delete[] cor;
   delete[] antecessor;
-  delete[] distancia;
-  return resultado;
+  reverse(ordem.begin(), ordem.end()); // inverte o vetor para ficar na ordem correta de prioridade
+  return ordem;
 }
 
-  void Grafo::visitaBfs(int u, int *cor, int *dist, int *antecessor){
-    queue <int> fila;
-
-    fila.push(u);
-
-    while (!fila.empty())
+void Grafo::visitaDfsComOrdem(int u, int *cor, int *antecessor, vector<int> &ordem)
+{
+  cor[u] = CINZA;
+  if (!this->listaAdjVazia(u))
+  {
+    Aresta *adj = this->primeiroListaAdj(u);
+    while (adj != NULL)
     {
-      u= fila.front();
-      while (!this->listaAdjVazia(u))
+      int v = adj->_v2();
+      if (cor[v] == BRANCO)
       {
-        Aresta *adj = this->primeiroListaAdj(u);
-        while (adj != NULL)
-        {
-          int v = adj->_v2();
-          if(cor[v]==0){
-            dist[v]= dist[u]+1;
-            cor[v]= 1;
-            antecessor[v] = u;
-            fila.push(v);
-            cout<< "Visitou: " << v <<endl;
-          }
-        }
-        
-        
+        antecessor[v] = u;
+        this->visitaDfsComOrdem(v, cor, antecessor, ordem);
       }
-      
-      
+      delete adj;
+      adj = this->proxAdj(u); // próxima aresta de u
     }
-    
-      
   }
 
-void Grafo::imprimeCaminho(int u, int v, int *antecessor) {
-    if (u == v) {
-        cout << v; // Chegamos ao vértice de destino, imprima-o
-    } else if (antecessor[v] == -1) {
-        cout << "Não existe caminho de " << u << " para " << v;
-    } else {
-        imprimeCaminho(u, antecessor[v], antecessor); // Passe o vetor antecessor
-        cout << " -> " << v; // Imprime o vértice atual após o retorno da recursão
-    }
+  cor[u] = PRETO;
+  ordem.push_back(u);
 }
+
 
   int encontrarConjunto(int *conjunto, int v){
     if(conjunto[v] == -1)
