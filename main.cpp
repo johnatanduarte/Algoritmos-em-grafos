@@ -4,7 +4,7 @@ using namespace std;
 
 int main (int argc, char **argv) 
 {
-    ifstream in ("dfs_input.txt");
+    ifstream in ("exemplo5.txt");
     Grafo *grafo = new Grafo (in);
     
     //grafo->kruskal();
@@ -15,8 +15,8 @@ int main (int argc, char **argv)
     //int raiz = 0;
 
                 //grafo->buscaEmLargura();
-                //grafo->buscaMenorCaminho(7, 1);
-    grafo->buscaProfundidade();
+                grafo->buscaMenorCaminho(2, 7);
+    //grafo->buscaProfundidade();
     
     // Verificar se o grafo possui ciclo
      bool possuiCiclo = grafo->aciclico();
